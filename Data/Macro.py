@@ -40,20 +40,18 @@ for i in np.arange(161):
         for k in np.arange(504):
             MacroP[k,j,i] = ftext[i+j+k]
             
-for i in np.arange(161):
-    MacroZ[i] = ztext[i]
-            
-e = open ('ElectronicPresure_tau.txt','r')
-ta = open ('tau.txt','r')
-T = open ('Temperature_tau.txt','r')
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(161, 30)
+        self.fc2 = nn.Conv1d(30, 60)
+        self.fc3 = nn.Linear(60, 86)
 
-etext = e.read()
-tatext = ta.read()
-Ttext = T.read()
-
-etext = etext.split()
-tatext = tatext.split()
-Ttext = Ttext.split()
+    def forward(self, x):
+        x = x.view(1, -1)
+        x = F.relu(self.fc1(x)))
+        x=F.relu(self.fc2(x)))
+        x=F.relu(self.fc3(x))
+        return x
 
 e.close();
 ta.close();
