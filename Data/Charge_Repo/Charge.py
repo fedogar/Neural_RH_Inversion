@@ -42,16 +42,16 @@ class ChargerIN ():
             for j in np.arange(504):
                 for k in np.arange(504):
                     MacroT[k,j,i] = ttext[i+j+k]
-                      
+        MacroT = torch.form_numpy(MacroZ)            
         for i in np.arange(161):
             for j in np.arange(504):
                 for k in np.arange(504):
                     MacroP[k,j,i] = ftext[i+j+k]
-            
+        MacroP = torch.form_numpy(MacroZ) 
         for i in np.arange(161):
             MacroZ[i] = ztext[i]
-
-        return [MactoT, MacroP, MacroZ]
+        MacroZ = torch.form_numpy(MacroZ)
+        return [MacroT, MacroP, MacroZ]
 
 class ChargerOUT():
 
@@ -84,12 +84,16 @@ class ChargerOUT():
         for i in np.arange(86):
             for j in np.arange(504):
                 for k in np.arange(504):
-                    MacroTT[k,j,i] = Ttext[i+j+k]            
+                    MacroTT[k,j,i] = Ttext[i+j+k] 
+        MacroTT =  torch.from_numpy(MacroTT)     
         for i in np.arange(86):
             for j in np.arange(504):
                 for k in np.arange(504):
-                    Macroe[k,j,i] = etext[i+j+k]    
+                    Macroe[k,j,i] = etext[i+j+k]
+        Macroe =  torch.from_numpy(Macroe)
         for i in np.arange(86):
             MacroTA[i] = tatext[i]
+        MacroTA =  torch.from_numpy(MacroTA)
+        
         return [MacroTT,Macroe, MacroTA]
         
