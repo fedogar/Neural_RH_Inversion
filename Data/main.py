@@ -41,9 +41,7 @@ def main():
         Module = GANS
         Load =GANS_TRAINING(ChargerIn, ChargerOUT, GANS)
 
-       
 
 
-   
 
     

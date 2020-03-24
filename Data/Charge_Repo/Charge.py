@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Mar  6 14:50:03 2020
-
-@author: ferrannew
 """
-import torch, torchvision
+import torch
 import io
 import numpy as np
 import matplotlib as plt
@@ -42,22 +40,22 @@ class ChargerIN ():
             for j in np.arange(504):
                 for k in np.arange(504):
                     MacroT[k,j,i] = ttext[i+j+k]
-        MacroT = torch.form_numpy(MacroZ)            
+        MacroT = torch.from_numpy(MacroZ)            
         for i in np.arange(161):
             for j in np.arange(504):
                 for k in np.arange(504):
                     MacroP[k,j,i] = ftext[i+j+k]
-        MacroP = torch.form_numpy(MacroZ) 
+        MacroP = torch.from_numpy(MacroZ) 
         for i in np.arange(161):
             MacroZ[i] = ztext[i]
-        MacroZ = torch.form_numpy(MacroZ)
+        MacroZ = torch.from_numpy(MacroZ)
         return [MacroT, MacroP, MacroZ]
 
 class ChargerOUT():
 
     def __init__(self):
         self.files_ = ['Look at the SourceCode']
-        self.in_ = self.charge()
+        self.out_ = self.charge()
 
     def charge(self):
      
