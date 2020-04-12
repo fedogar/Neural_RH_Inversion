@@ -214,31 +214,30 @@ class MakeTxt (object):
         from astropy.io import ascii
         import copy
         
-        pixel=np.arange(len(self.Object))
         #Then write pixel by pixel
         #for j in np.arange(list(self.Object[0].size())[0]):   
-        for j in pixel:  
+        for j in np.arange(len(self.Object)):  
             filename = './Desire_Repo/ModelCube/pixel' + str(j) + '.mod'
             
             ascii.write(np.transpose(self.Object[j].detach().numpy()), filename, overwrite=True)
             self.line_prepender(filename)
 
 #Functionality to run 
-def Desire (pixel):
+def Desire ():
     
-    Object = pixel;
     import fileinput
     import os
+    names = os.listdir('Desire_Repo/ModelCube/')
     bashCommand = "/Users/ferrannew/anaconda3/envs/pytorch_env/Proyectos_ML/desire/run/example/desire desire.dtrol"
    
-    for i in (np.arange(len(Object))+1): 
+    j = names[0].partition(".")[0]
+    for i in names: 
         for line in fileinput.input("/Users/ferrannew/anaconda3/envs/pytorch_env/Proyectos_ML/desire/run/example/desire.dtrol"):
             # inside this loop the STDOUT will be redirected to the file
             # the comma after each print statement is needed to avoid double line breaks
-            line.replace("pixel"+str(i-1), "pixel"+str(i))
+            line.replace(j.partition(".")[0], i.partition(".")[0])
+            j = i.partition(".")[0]
             os.system(bashCommand)
-    
-
 
 #Here make the changes to load the file for representation in type of ASCII table, which desire can read
 #Change manually in the function pixel in order to store more pixles
