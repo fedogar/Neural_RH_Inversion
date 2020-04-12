@@ -160,15 +160,29 @@ class ChargerTABLE (object):
             
             if j  == 2 :
                self.ChOUT.out_[j] = (self.ChOUT.out_[j].repeat(504*504,1)).view(-1,86)
-               TensorList.append(torch.log(self.ChOUT.out_[j]))
+               self.ChOUT.out_[j] = self.ChOUT.out_[j].view(504*504,86)
+               TensorList.append(self.ChOUT.out_[j])
             else :
                 self.ChOUT.out_[j] = self.ChOUT.out_[j].view(504*504,86)
                 TensorList.append(self.ChOUT.out_[j])
             
-        for i in np.arange(6):
+        for i in np.arange(8):
             self.ChAppend.columns[i] = self.ChAppend.columns[i].view(504*504,86)
             TensorList.append(self.ChAppend.columns[i])
-
+            
+        for i in np.arange(len(TensorList)):
+            TensorList[i] = TensorList[i].view(1,504*504,86)
+            
+        TensorList = torch.cat(TensorList[:], dim =0)
+        TensorList = TensorList.chunk(504*504,dim=1)
+        
+        TensorList = list(TensorList)
+        
+        counter =0
+        for k in TensorList:
+            TensorList[counter]= torch.squeeze(k, dim = 1)
+            counter=counter + 1 
+            
         return TensorList   
 """
 Notar aquí hemos supesto las profundidades ópticas las mismas para todos los pixeles
@@ -185,11 +199,12 @@ class MakeTxt (object):
         self.Object = table.Table
         self.write()
        
-    def line_prepender(self, filename, line):
+    def line_prepender(self, filename):
         with open(filename, 'r+') as f:
-            content = f.read()
+            content = f.read().splitlines(True)
+            content[0] = '0.0      1.0     0.0000000E+00\n'
             f.seek(0, 0)
-            f.write(line.rstrip('\r\n') + '\n' + content)  
+            f.writelines(content)  
         
     def write(self) :
            
@@ -198,36 +213,42 @@ class MakeTxt (object):
         
         from astropy.io import ascii
         import copy
-        subarray=list()
-        array = list()
-        for i in np.arange(9):
-            array.append(copy.deepcopy(self.Object[i].detach().numpy()))
-            
+        
+        pixel=np.arange(len(self.Object))
         #Then write pixel by pixel
         #for j in np.arange(list(self.Object[0].size())[0]):   
-        for j in np.arange(2):  
+        for j in pixel:  
             filename = './Desire_Repo/ModelCube/pixel' + str(j) + '.mod'
             
-            for i in np.arange(len(array)):
-                subarray.append(array[i][j])
-                
-            ascii.write(subarray, filename, overwrite=True)
-            self.line_prepender(filename, "0.0      1.0     0.0000000E+00")
-            
-  """
-   Still need to see if that writes good
-  """
+            ascii.write(np.transpose(self.Object[j].detach().numpy()), filename, overwrite=True)
+            self.line_prepender(filename)
+
+#Functionality to run 
+def Desire (pixel):
+    
+    Object = pixel;
+    import fileinput
+    import os
+    bashCommand = "/Users/ferrannew/anaconda3/envs/pytorch_env/Proyectos_ML/desire/run/example/desire desire.dtrol"
+   
+    for i in (np.arange(len(Object))+1): 
+        for line in fileinput.input("/Users/ferrannew/anaconda3/envs/pytorch_env/Proyectos_ML/desire/run/example/desire.dtrol"):
+            # inside this loop the STDOUT will be redirected to the file
+            # the comma after each print statement is needed to avoid double line breaks
+            line.replace("pixel"+str(i-1), "pixel"+str(i))
+            os.system(bashCommand)
+    
+
 
 #Here make the changes to load the file for representation in type of ASCII table, which desire can read
-
+#Change manually in the function pixel in order to store more pixles
 
 class ReadTXT (self):
+    return
     
 #Here we supose that we will read the data from the ascii tables also;;
 #Meaning we can train infinite models if given so ::::
     
-    
-
 class ChargerStoke ():
     
     def __init__(self):
@@ -310,9 +331,10 @@ class ChargerStoke ():
             ax[0,1].set_xlabel('landa') 
             ax[0,1].set_ylabel(variables[3])
   #Class to visualize a .per concrete, but not charge the whole macro    
+            
+            
 class ChargeMStokes ():
-    
-    #We will use a 504,504 simulations , but can be changed manually:
+        #We will use a 504,504 simulations , but can be changed manually:
      
     def __init__(self):
         self.Macro = self.Charge()
@@ -376,42 +398,83 @@ class ChargeMStokes ():
                 SubtensorList.append(copy.deepcopy([landa,I,U,V,Q]))
                 I.clear();Q.clear();U.clear();V.clear();landa.clear();
                 
-                for i in np.arange(len(SubtensorList)):
-                    SubtensorList[i] = torch.tensor(SubtensorList[i] , dtype = float, requires_grad =True) 
+                for j in np.arange(len(SubtensorList)):
+                    SubtensorList[j] = torch.tensor(SubtensorList[j] , dtype = float, requires_grad =True) 
            
             TensorList.append(SubtensorList)
+            
         return TensorList
   #Returns a list of pixels with, inside each pixel each line is a tensor which has to be trained
 
-
-
-         
-class Charger_MStokes_MTable(object):
+  
+class Load_MStokes_MTable(object):
     
-    def __init__(self,ChargerTABLE,ChargerOUT,ChargerRest,ChargeMStokes):
+    def __init__(self, Table, Stoke):
         
-        self.MSimulation = ChargetTable(ChargerOUT,ChargerRest).Table
-                  
-    def Variab():
-        x = len(self.Strokes)
-        return x
+        self.MSimulation = Table.table
+        self.MStoke = Stoke.Macro
+        #Make uso of 3 lines with possible different spacial gradings
+        self.lines = lines()
         
-    def Charge (self, Lines_Vis):
+    def lines (self):
         
-        TensorList = list()
+        lines = list()
         
-        #Here we take into account that may be different griding for the different lines such:
-
-        for i in self.StokesDict:
-            key = list(i.keys())
+        counter  =0;
+        for i in len(self.MStoke[0]):
+            a = list(self.MStoke[0][i].size())[-1]
+            lines.append(LinearStokes(5*a, 86*11)) 
+        
+        return lines
+                          
+    def train (self):
+        
+        lines = list();   
+        a = np.minimum(len(self.Simulation),len(self.MStoke))
+        
+        for epoch in np.arange(40):
             
-            Tensor = torch.tensor(i[key[1]],i[key[2]] dtype=float) ,
-                
+            for i in np.arange(a/252):
+                #Here we suppose we charge the same amount of lines
+                for j in np.arange(len(a[0])):
+                    
+                    batchTrain = self.MSimulation[252*i:(i+1)*252 -1]
+                    batchTest = self.MStoke[252*i:(i+1)*252 -1][j]
+                    
+                if i == ((504*504)-1):
+                    break
+                            
+            for j in len(self.MStoke[i])
+                lines.append(self.MStoke[i][j])
+           
+#Remeber that has to be passed the table object already create and the object Stoke, 
+#Already created, with one to one identification in :
+            
+class LinearStokes(nn.Module,in_,out_):
+   
+    def __init__(self,in_,out_):
+        super(LinearStokes,self).__init__()
+        self.fc1 = nn.Linear(in_,100)
+        self.fc2 = nn.Linear(100,50)
+        self.fc3 = nn.Linear(50,100)
+        self.fc4 = nn.Linear(100,out_)
+
+    def forward(self,x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        x = self.fc4(x)
+        return x
+
+
+
+
+
+
+
 """
 Class used to store in colums the tensors corresponfing to the fiels variables, in order to train neural networks
-"""
-
-    
+""" 
 class Model_Reader():
     
     def __init__(self):  
