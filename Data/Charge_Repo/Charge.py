@@ -43,16 +43,22 @@ class ChargerIN ():
         MacroT = np.zeros((504,504,161))
         MacroP = np.zeros((504,504,161))
         MacroZ = np.zeros(161)
-
-        for i in np.arange(161):
+        
+        l=-1
+        for k in np.arange(161):
             for j in np.arange(504):
-                for k in np.arange(504):
-                    MacroT[k,j,i] = ttext[i+j+k]
-        MacroT = torch.from_numpy(MacroT)            
-        for i in np.arange(161):
+                for i in np.arange(504):
+                    l=l+1
+                    MacroT[i,j,k] = ttext[l]
+       
+        MacroT = torch.from_numpy(MacroT)
+        l=-1            
+        for k in np.arange(161):
             for j in np.arange(504):
-                for k in np.arange(504):
-                    MacroP[k,j,i] = ftext[i+j+k]
+                for i in np.arange(504):
+                    l=l+1
+                    MacroP[i,j,k] = ftext[l]
+       
         MacroP = torch.from_numpy(MacroP) 
         for i in np.arange(161):
             MacroZ[i] = ztext[i]
@@ -87,15 +93,20 @@ class ChargerOUT():
         Macroe= np.zeros((504,504,86))
         MacroTT = np.zeros((504,504,86))
 
+        l=-1
         for i in np.arange(86):
             for j in np.arange(504):
                 for k in np.arange(504):
-                    MacroTT[k,j,i] = Ttext[i+j+k] 
+                    l=l+1
+                    MacroTT[k,j,i] = Ttext[l] 
         MacroTT =  torch.from_numpy(MacroTT)     
+        l=-1
         for i in np.arange(86):
             for j in np.arange(504):
                 for k in np.arange(504):
-                    Macroe[k,j,i] = etext[i+j+k]
+                    l=l+1
+                    Macroe[k,j,i] = etext[l]
+                    
         Macroe =  torch.from_numpy(Macroe)
         for i in np.arange(86):
             MacroTA[i] = tatext[i]
@@ -107,7 +118,7 @@ class ChargerRest ():
     
     def __init__(self):
     
-        self.files = ['./Charge_Repo/File_of_Variables/field.txt', './Charge_Repo/File_of_Variables/vel.txt', './Charge_Repo/File_of_Variables/incli.txt', './Charge_Repo/File_of_Variables/azimuth.txt', './Charge_Repo/File_of_Variables/pgas.txt', './Charge_Repo/File_of_Variables/pgas.txt', './Charge_Repo/File_of_Variables/rho.txt']
+        self.files = ['./Charge_Repo/File_of_Variables/field.txt', './Charge_Repo/File_of_Variables/vel.txt', './Charge_Repo/File_of_Variables/incli.txt', './Charge_Repo/File_of_Variables/azimuth.txt', './Charge_Repo/File_of_Variables/Zeta.txt', './Charge_Repo/File_of_Variables/pgas.txt', './Charge_Repo/File_of_Variables/rho.txt']
         self.columns = self.LoadTable()
             
     def LoadTable (self):
@@ -115,8 +126,8 @@ class ChargerRest ():
         x =list()
         count=0
         Macro = np.zeros((504,504,86))
-        
-
+          
+        import copy
         
         for i in self.files :
             
@@ -130,20 +141,45 @@ class ChargerRest ():
             data = f.read()
             f.close()
             data = data.split()
-    
-            for s in np.arange(86):
+            
+            l=-1
+            for k in np.arange(86):
                 for j in np.arange(504):
-                    for k in np.arange(504):
-                        Macro[k][j][s] = data[k+j+s]
+                    for s in np.arange(504):
+                        l=l+1
+                        Macro[s][j][k] = data[l]
             
             count=count +1
-            b = torch.from_numpy(Macro)
+            b = torch.from_numpy(copy.deepcopy(Macro))
             x.append(b.requires_grad_(True))
-        
+            
         return x
+
+
+def representationRest(rest):
+           
+    import matplotlib.pyplot as plt
+    
+    names = ['field', 'micro', 'vel', 'incli', 'azimut', 'Zeta', 'pgas', 'rho' ]
+
+    fig,ax= plt.subplots(4,sharex=True)
+    fig2,ax2= plt.subplots(4,sharex=True)
+
+    for i in np.arange(8):
+
+            if i < 4:
+                ax[i].plot(rest.columns[i][300,400].detach())
+                ax[i].plot(rest.columns[i][300,400].detach())
+                ax[i].set_title(names[i])
+            else:
+                ax2[i-4].plot(rest.columns[i][300,400].detach())
+                ax[i-4].plot(rest.columns[i][300,400].detach())
+                ax2[i-4].set_title(names[i])
+    
+
   # Desire utiliza en la primera columna appended micro.txt por lo que debemos añadir un archivo:'./Charge_Repo/File_of_Variables/micro.txt',  
     
-   
+
 #Charge table has the structure of the columns tht desire programe needs for the input data ::::....      
 class ChargerTABLE (object):
     
@@ -192,6 +228,34 @@ Deben de ser obtenidas leyendo dicho valor cuando este llega a dicho valor de pi
 #Here manually you can tell the programe how many lines you want to store and to do not have
 #to make more comprobartions insert manually the number to check in numberlines and LabelLines
 
+def representationTable(Table):
+    
+    import matplotlib.pyplot as plt
+    
+    names = ['logTau', 'Temperature','Presure', 'field,', 'micro', 'vel', 'incli', 'azimut', 'Zeta', 'pgas', 'rho' ]
+    counter =0;
+    fig,ax= plt.subplots(4,sharex=True)
+    fig2,ax2=plt.subplots(4,sharex=True)
+    fig3,ax3=plt.subplots(3,sharex=True)
+    
+    for i in np.arange(11):
+        for j in ([0,2,3,300,4555, 500, 2506]):
+            
+            if i <= 3 :
+                ax[i].plot(Table.Table[j][i].detach())
+                ax[i].plot(Table.Table[j][i].detach())
+                ax[i].set_title(names[i])
+                
+            if i>4 and  i<=7:
+                ax2[i-4].plot(Table.Table[j][i].detach())
+                ax[i-4].plot(Table.Table[j][i].detach())
+                ax2[i-4].set_title(names[i])
+                
+            if i>7: 
+                ax3[i-8].plot(Table.Table[j][i].detach())
+                ax3[i-8].plot(Table.Table[j][i].detach())
+                ax3[i-8].set_title(names[i])
+                
 class MakeTxt (object):
     
     def __init__ (self, table):
@@ -205,6 +269,10 @@ class MakeTxt (object):
             content[0] = '0.0      1.0     0.0000000E+00\n'
             f.seek(0, 0)
             f.writelines(content)  
+            
+           # import os
+            #bashCommand = "sed -i '' -e '$ d' " + filename
+            #os.system(bashCommand)
         
     def write(self) :
            
@@ -221,6 +289,7 @@ class MakeTxt (object):
             
             ascii.write(np.transpose(self.Object[j].detach().numpy()), filename, overwrite=True)
             self.line_prepender(filename)
+            
 
 #Functionality to run 
 def Desire ():
@@ -258,7 +327,7 @@ class ChargerStoke ():
         
     def open_(self):
         
-        fileO = open('./Desire_Repo/SokeCube/pixel0.per')
+        fileO = open('./Desire_Repo/StokeCube/pixel0.per')
         read = fileO.read()
         fileO.close()
         read = read.split()
@@ -404,7 +473,6 @@ class ChargeMStokes ():
             
         return TensorList
   #Returns a list of pixels with, inside each pixel each line is a tensor which has to be trained
-
   
 class Load_MStokes_MTable(object):
     
@@ -449,7 +517,7 @@ class Load_MStokes_MTable(object):
 #Remeber that has to be passed the table object already create and the object Stoke, 
 #Already created, with one to one identification in :
             
-class LinearStokes(nn.Module,in_,out_):
+class LinearStokes(nn.Module):
    
     def __init__(self,in_,out_):
         super(LinearStokes,self).__init__()
@@ -464,13 +532,7 @@ class LinearStokes(nn.Module,in_,out_):
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
         return x
-
-
-
-
-
-
-
+    
 """
 Class used to store in colums the tensors corresponfing to the fiels variables, in order to train neural networks
 """ 
