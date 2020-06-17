@@ -1236,6 +1236,7 @@ class ChargeMStokes ():
             MacroTm[i][j] = torch.min(table[i][j][1]).detach().numpy()
             MacroPm[i][j] = torch.min(table[i][j][2]).detach().numpy()
             MacroVm[i][j] = torch.min(table[i][j][4]).detach().numpy()
+            
     fig, ax  = plt.subplots(2,2)
     im1 = ax[0][0].imshow(MacroP,aspect='equal' )
     ax[0][0].set_title('Median V:Stokes')
@@ -1288,9 +1289,6 @@ class ChargeMStokes ():
 """
 Visulalización de los pixeles de la simulación
 """
-
-    
-
 
 class ResizeDesire (object):
     

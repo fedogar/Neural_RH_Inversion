@@ -17,24 +17,10 @@ class Testing(object):
         self.cuda = torch.cuda.is_available()
         self.gpu = gpu
         self.device = torch.device(f"cuda:{self.gpu}" if self.cuda else "cpu")
-
-        if (checkpoint is None):
-            files = glob.glob('trained/*.pth')
-            self.checkpoint = max(files, key=os.path.getctime)
-        else:
-            self.checkpoint = '{0}'.format(checkpoint)
         
         self.model = model.Network(95*3+1, 100, 2).to(self.device)
         
-        print('N. total parameters : {0}'.format(sum(p.numel() for p in self.model.parameters() if p.requires_grad)))
-
-        print("=> loading checkpoint '{}'".format(self.checkpoint))
-
-        checkpoint = torch.load(self.checkpoint, map_location=lambda storage, loc: storage)
-        self.model.load_state_dict(checkpoint['state_dict'])
-        print("=> loaded checkpoint '{}'".format(self.checkpoint))
-
-        root = '/scratch1/aasensio/ferran/'
+        root = '/Users/ferran_2020/TFG/Neural_RH_Inversion/'
         print("Reading Enhanced_tau_530 - tau")
         tmp = io.readsav(f'{root}Enhanced_tau_530.save')
         self.T_tau = tmp['tempi'] #.reshape((86, 504*504))
@@ -72,18 +58,22 @@ class Testing(object):
         f, ax = pl.subplots(ncols=3, nrows=2, figsize=(10,6))
         im = ax[0,0].imshow(out[:, 0].reshape((64, 64)), cmap=pl.cm.viridis)
         pl.colorbar(im, ax=ax[0,0])
+        ax[0,0].set_title('Temperatura - Reconstrucción :')
         im = ax[0,1].imshow(out[:, 1].reshape((64, 64)), cmap=pl.cm.viridis)
+        ax[0,1].set_title('Presión - Reconstrucción')
         pl.colorbar(im, ax=ax[0,1])
         im = ax[1,0].imshow((self.T_tau[ind_tau, 0:64, 0:64] - 4000.0)/ (15000.0 - 4000.0), cmap=pl.cm.viridis)
         pl.colorbar(im, ax=ax[1,0])
+        ax[1,0].set_title('Temperatura - Original')
         im = ax[1,1].imshow(np.log(self.Pe_tau[ind_tau, 0:64, 0:64]) / 10.0, cmap=pl.cm.viridis)
         pl.colorbar(im, ax=ax[1,1])
+        ax[1,1].set_title('Presión - Original')
         ax[0,2].plot(out[:, 0].reshape((64, 64)).flatten(), self.T_tau[ind_tau, 0:64, 0:64].flatten() / 1e3, '.')
+        ax[0,2].set_title('Temperatura Original - Temperatura Reconstruida')
         ax[1,2].plot(out[:, 1].reshape((64, 64)).flatten(), np.log(self.Pe_tau[ind_tau, 0:64, 0:64].flatten()) / 10.0, '.')        
+        ax[1,2].set_title('Presión Original - Presión Reconstrudia')
         pl.show()
-            
-if (__name__ == '__main__'):
+        
     
-    deepnet = Testing(gpu=0, checkpoint=None)
-
-    deepnet.test()
+deepnet_Test = Testing(gpu=0, checkpoint=None)
+deepnet_Test.test()
